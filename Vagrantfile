@@ -42,6 +42,15 @@ sudo apt-get install \
   libpam0g-dev \
   -y
 
+# Install elasticsearch
+sudo apt-get install \
+  openjdk-8-jre-headless \
+  apt-transport-https \
+  -y
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+sudo echo "deb https://artifacts.elastic.co/packages/6.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-6.x.list
+sudo apt update && sudo apt install elasticsearch
+
 # Install rbenv to install ruby
 git clone https://github.com/sstephenson/rbenv.git /home/vagrant/.rbenv
 echo 'export PATH="/home/vagrant/.rbenv/bin:$PATH"' >> /home/vagrant/.bash_profile

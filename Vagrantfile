@@ -50,6 +50,8 @@ sudo apt-get install \
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 sudo echo "deb https://artifacts.elastic.co/packages/6.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-6.x.list
 sudo apt update && sudo apt install elasticsearch
+sudo /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-kuromoji
+sudo touch /etc/elasticsearch/userdic.txt
 
 # Install rbenv to install ruby
 git clone https://github.com/sstephenson/rbenv.git /home/vagrant/.rbenv

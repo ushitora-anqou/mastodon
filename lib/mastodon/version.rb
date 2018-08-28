@@ -9,11 +9,15 @@ module Mastodon
     end
 
     def minor
-      4
+      5
     end
 
     def patch
+<<<<<<< HEAD
       5
+=======
+      0
+>>>>>>> v2.5.0rc1
     end
 
     def pre
@@ -21,7 +25,7 @@ module Mastodon
     end
 
     def flags
-      ''
+      'rc1'
     end
 
     def to_a
@@ -32,8 +36,16 @@ module Mastodon
       [to_a.join('.'), flags].join
     end
 
+    def repository
+      'tootsuite/mastodon'
+    end
+
     def source_base_url
+<<<<<<< HEAD
       'https://github.com/ushitora-anqou/mastodon'
+=======
+      "https://github.com/#{repository}"
+>>>>>>> v2.5.0rc1
     end
 
     # specify git tag or commit hash here

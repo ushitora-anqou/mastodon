@@ -40,7 +40,8 @@ class StatusLengthValidator < ActiveModel::Validator
                 "辛い", "ころす", "つらみ", "線路に落",
                 "腹を切", "身体中に傷を", "命をた", "首吊",
                 "ごみかす", "首を吊", "しね", "しんでくれ",
-                "唾棄"]
+                "唾棄", "生きてて", "いきててごめんなさい",
+                "ころせ", "剥奪", "生存権が", "むのう"]
     if status.spoiler_text.empty? then
       # with spoiler text, no need to worry about ng words inside main text.
       toot_text = total_text(status)

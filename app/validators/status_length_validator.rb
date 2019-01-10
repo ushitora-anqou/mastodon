@@ -15,7 +15,7 @@ class StatusLengthValidator < ActiveModel::Validator
   end
 
   def turai?(status)
-    # only for concrete account. No.6
+    # only for concrete account.
     return false if (status.account_id != 6)
 
     # I would like to (written in Python)
@@ -30,21 +30,30 @@ class StatusLengthValidator < ActiveModel::Validator
     ng_words = ["つらい", "死", "駄目", "ダメ", "だめ",
                 "バカ", "無能", "屑", "殺", "クズ", "ゴミ",
                 "バーカ", "アホ", "ごめんなさいごめんなさい",
-                "無理", "しにたい", "しにたみ","ころして",
+                "生きるのは、無理", "しにたい", "しにたみ",
                 "あほ", "阿呆", "奴隷", "血が流れ", "自傷",
                 "申し訳ありません申し訳ありません", "ばか",
-                "命を絶", "絞め", "学科の底辺"]
-    if status.spoiler_text.length > 0 then
+                "命を絶", "絞め", "学科の底辺", "つらすぎ",
+                "turai", "愚か者", /ばー*か/, "消えてくれ",
+                "くそ", "クソ", "塵", "殴る", "suicide",
+                "消えろ", "意義が負の無限大","ころして",
+                "辛い", "ころす", "つらみ", "線路に落",
+                "腹を切", "身体中に傷を", "命をた", "首吊",
+                "ごみかす", "首を吊", "しね", "しんでくれ",
+                "唾棄"]
+    if status.spoiler_text.empty? then
       # with spoiler text, no need to worry about ng words inside main text.
-      toot_text = status.spoiler_text
-    else
       toot_text = total_text(status)
+    else
+      toot_text = status.spoiler_text
     end
     ng_words.each do |ng_word|
       if (toot_text.index(ng_word) != nil) then
+        # when ng word is detected
         return true
       end
     end
+    # no ng words are detected. OKay.
     return false
   end
 

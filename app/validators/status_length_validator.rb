@@ -48,14 +48,7 @@ class StatusLengthValidator < ActiveModel::Validator
     else
       toot_text = status.spoiler_text
     end
-    ng_words.each do |ng_word|
-      if (toot_text.index(ng_word) != nil) then
-        # when ng word is detected
-        return true
-      end
-    end
-    # no ng words are detected. OKay.
-    return false
+    ng_words.any? { |ng_word| toot_text.index(ng_word) }
   end
 
   def countable_length(status)

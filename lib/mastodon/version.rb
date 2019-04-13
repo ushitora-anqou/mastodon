@@ -9,11 +9,11 @@ module Mastodon
     end
 
     def minor
-      7
+      8
     end
 
     def patch
-      4
+      0
     end
 
     def pre
@@ -33,7 +33,7 @@ module Mastodon
     end
 
     def repository
-      'ushitora-anqou/mastodon'
+      'tootsuite/mastodon'
     end
 
     def source_base_url
@@ -42,7 +42,7 @@ module Mastodon
 
     # specify git tag or commit hash here
     def source_tag
-      'live'
+      nil
     end
 
     def source_url

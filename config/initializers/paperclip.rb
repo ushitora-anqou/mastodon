@@ -16,6 +16,19 @@ Paperclip::Attachment.default_options.merge!(
 if ENV['S3_ENABLED'] == 'true'
   require 'aws-sdk-s3'
 
+  ######## MONKEY PATCH!! ##########
+  ### Aws::S3::FileUploader uploads a file in multipart-format
+  ### when the file is over FIFTEEN_MEGABYTES (the default value is, of course, 15MiB).
+  ### However, Google Cloud Storage doesn't accept multipart-format for now,
+  ### so we can't use it. Paperclip doesn't seem to have options
+  ### to disable multipart-format, so I wrote this monkey patch.
+  ### This patch should be deleted, for examples, if:
+  ###      i) Paperclip supports some option to disable multipart-format, or
+  ###     ii) Mastodon supports GCS officially (not using S3-compatible APIs).
+  ###
+  Aws::S3::FileUploader::FIFTEEN_MEGABYTES = 40 * 1024 * 1024
+  ##################################
+
   s3_region   = ENV.fetch('S3_REGION')   { 'us-east-1' }
   s3_protocol = ENV.fetch('S3_PROTOCOL') { 'https' }
   s3_hostname = ENV.fetch('S3_HOSTNAME') { "s3-#{s3_region}.amazonaws.com" }

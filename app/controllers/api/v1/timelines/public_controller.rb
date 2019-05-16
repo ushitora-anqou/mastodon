@@ -40,7 +40,7 @@ class Api::V1::Timelines::PublicController < Api::BaseController
 
   def public_timeline_statuses
     if truthy_param?(:local)
-      Status.as_wakuwaku_timeline(current_account)
+      Status.as_wakuwaku_timeline(current_account, truthy_param?(:local))
     else
       Status.as_public_timeline(current_account, truthy_param?(:local))
     end

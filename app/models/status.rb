@@ -304,11 +304,16 @@ class Status < ApplicationRecord
       apply_timeline_filters(query, account, local_only)
     end
 
-    def as_wakuwaku_timeline(account = nil)
-      # public or unlisted local statuses
-      query = Status.local.with_wakuwaku_visibility.without_reblogs.without_replies
+    def as_wakuwaku_timeline(account = nil, local_only = false)
+      query = wakuwaku_timeline_scope(local_only).without_replies
 
-      apply_timeline_filters(query, account, true)
+      apply_timeline_filters(query, account, local_only)
+    end
+
+    def as_wakuwaku_tag_timeline(tag, account = nil, local_only = false)
+      query = wakuwaku_timeline_scope(local_only).tagged_with(tag)
+
+      apply_timeline_filters(query, account, local_only)
     end
 
     def as_tag_timeline(tag, account = nil, local_only = false)
@@ -404,6 +409,13 @@ class Status < ApplicationRecord
       starting_scope = local_only ? Status.local : Status
       starting_scope
         .with_public_visibility
+        .without_reblogs
+    end
+
+    def wakuwaku_timeline_scope(local_only = false)
+      starting_scope = local_only ? Status.local : Status
+      starting_scope
+        .with_wakuwaku_visibility
         .without_reblogs
     end
 

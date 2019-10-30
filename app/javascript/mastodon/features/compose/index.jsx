@@ -27,6 +27,8 @@ import NavigationContainer from './containers/navigation_container';
 import SearchContainer from './containers/search_container';
 import SearchResultsContainer from './containers/search_results_container';
 
+import ModsAnnouncements from './components/mods_announcements';
+
 const messages = defineMessages({
   start: { id: 'getting_started.heading', defaultMessage: 'Getting started' },
   home_timeline: { id: 'tabs_bar.home', defaultMessage: 'Home' },
@@ -125,6 +127,7 @@ class Compose extends PureComponent {
               <NavigationContainer onClose={this.onBlur} />
 
               <ComposeFormContainer autoFocus={!isMobile(window.innerWidth)} />
+              <ModsAnnouncements />
 
               <div className='drawer__inner__mastodon'>
                 <img alt='' draggable='false' src={mascot || elephantUIPlane} />

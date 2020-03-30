@@ -23,9 +23,9 @@ class SearchQueryTransformer < Parslet::Transform
     def clause_to_query(clause)
       case clause
       when TermClause
-        { multi_match: { type: 'most_fields', query: clause.term, fields: ['text', 'text.stemmed'] } }
+        { match: { 'text.stemmed': { query: clause.term, operator: 'and' } } }
       when PhraseClause
-        { match_phrase: { text: { query: clause.phrase } } }
+        { match_phrase: { 'text.stemmed': { query: clause.phrase } } }
       else
         raise "Unexpected clause type: #{clause}"
       end

@@ -311,7 +311,17 @@ class Status < ApplicationRecord
     end
 
     def as_wakuwaku_tag_timeline(tag, account = nil, local_only = false)
-      query = wakuwaku_timeline_scope(local_only).tagged_with(tag)
+      if account != nil
+        following_ids = account.following.map{|x| x.id}
+        # my private toot can be seen
+        following_ids.push(account.id)
+
+        # public, unlisted and local following private
+        query = wakuwaku_timeline_scope(local_only).or(Status.local.where(account_id: following_ids, visibility: :private).without_replies).without_reblogs.tagged_with(tag)
+      else
+        # public
+        query = timeline_scope(local_only).tagged_with(tag)
+      end
 
       apply_timeline_filters(query, account, local_only)
     end

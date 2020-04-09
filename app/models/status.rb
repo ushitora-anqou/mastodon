@@ -311,7 +311,7 @@ class Status < ApplicationRecord
     end
 
     def as_wakuwaku_tag_timeline(tag, account = nil, local_only = false)
-      if account != nil
+      if not account.nil?
         following_ids = account.following.map{|x| x.id}
         # my private toot can be seen
         following_ids.push(account.id)

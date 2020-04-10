@@ -18,11 +18,9 @@ class FanOutOnWriteService < BaseService
       deliver_to_lists(status)
     end
 
-    return if status.account.silenced? || !status.direct_visibility? || status.reblog?
+    return if status.account.silenced? || !status.wakuwaku_visibility? || status.reblog?
 
-    # deliver public, unlisted, private toot to hashtags
     deliver_to_hashtags(status)
-    return if !status.wakuwaku_visibility
 
     return if status.reply? && status.in_reply_to_account_id != status.account_id
 

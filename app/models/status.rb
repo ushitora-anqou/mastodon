@@ -318,8 +318,8 @@ class Status < ApplicationRecord
 
         # public, unlisted and local following private
         query = wakuwaku_timeline_scope(local_only)
-          .or(Status.local.where(account_id: following_ids, visibility: :private).without_replies)
-          .without_reblogs.tagged_with(tag)
+          .or(Status.local.where(account_id: following_ids, visibility: :private))
+          .tagged_with(tag)
       else
         # public
         query = timeline_scope(local_only).tagged_with(tag)

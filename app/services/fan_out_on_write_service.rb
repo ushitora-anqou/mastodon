@@ -18,7 +18,7 @@ class FanOutOnWriteService < BaseService
       deliver_to_lists(status)
     end
 
-    return if status.account.silenced? || !status.direct_visibility? || status.reblog?
+    return if status.account.silenced? || status.direct_visibility? || status.reblog?
 
     # deliver public, unlisted, private toot to hashtags
     deliver_to_hashtags(status)

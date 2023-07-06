@@ -23,7 +23,7 @@
     class: Scheduler::Trends::ReviewNotificationsScheduler
     queue: scheduler
   indexing_scheduler:
-    cron: '0 3 * * * Asia/Tokyo'
+    every: '5m'
     class: Scheduler::IndexingScheduler
     queue: scheduler
   vacuum_scheduler:

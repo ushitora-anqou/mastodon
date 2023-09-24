@@ -134,4 +134,8 @@ module HasUserSettings
   def hide_all_media?
     settings['web.display_media'] == 'hide_all'
   end
+
+  def setting_webui_styles
+    settings['web.mod_webui_styles']
+  end
 end

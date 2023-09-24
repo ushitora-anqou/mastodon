@@ -40,6 +40,7 @@ class UserSettings
     setting :emoji_style, default: 'auto', in: %w(auto native twemoji)
     setting :color_scheme, default: 'auto', in: %w(auto light dark)
     setting :contrast, default: 'auto', in: %w(auto high)
+    setting :mod_webui_styles, default: 'default', in: %w(default compact legacy)
   end
 
   namespace :notification_emails do

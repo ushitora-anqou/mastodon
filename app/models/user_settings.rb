@@ -37,6 +37,7 @@ class UserSettings
     setting :display_media, default: 'default', in: %w(default show_all hide_all)
     setting :auto_play, default: false
     setting :emoji_style, default: 'auto', in: %w(auto native twemoji)
+    setting :mod_webui_styles, default: 'default', in: %w(default compact legacy)
   end
 
   namespace :notification_emails do

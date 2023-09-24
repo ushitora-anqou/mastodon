@@ -153,6 +153,12 @@ module ApplicationHelper
     tag.meta(content: content, property: property)
   end
 
+  WEBUI_STYLES = {
+    'default' => '',
+    'compact' => 'compact-padding',
+    'legacy' => 'legacy-style',
+  }.freeze
+
   def body_classes
     output = []
     output << content_for(:body_classes)
@@ -160,6 +166,7 @@ module ApplicationHelper
     output << 'system-font' if current_account&.user&.setting_system_font_ui
     output << 'custom-scrollbars' unless current_account&.user&.setting_system_scrollbars_ui
     output << (current_account&.user&.setting_reduce_motion ? 'reduce-motion' : 'no-reduce-motion')
+    output << WEBUI_STYLES[current_account&.user&.setting_webui_styles]
     output << 'rtl' if locale_direction == 'rtl'
     output.compact_blank.join(' ')
   end

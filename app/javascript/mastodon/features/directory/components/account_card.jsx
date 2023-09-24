@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import classNames from 'classnames';
-import { Link } from 'react-router-dom';
+
 
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import ImmutablePureComponent from 'react-immutable-pure-component';
@@ -19,6 +19,7 @@ import { openModal } from 'mastodon/actions/modal';
 import { Avatar } from 'mastodon/components/avatar';
 import Button from 'mastodon/components/button';
 import { DisplayName } from 'mastodon/components/display_name';
+import Permalink from 'mastodon/components/permalink';
 import { ShortNumber } from 'mastodon/components/short_number';
 import { autoPlayGif, me, unfollowModal } from 'mastodon/initial_state';
 import { makeGetAccount } from 'mastodon/selectors';
@@ -174,7 +175,7 @@ class AccountCard extends ImmutablePureComponent {
 
     return (
       <div className='account-card'>
-        <Link to={`/@${account.get('acct')}`} className='account-card__permalink'>
+        <Permalink href={account.get('url')} to={`/@${account.get('acct')}`} className='account-card__permalink'>
           <div className='account-card__header'>
             <img
               src={
@@ -188,7 +189,7 @@ class AccountCard extends ImmutablePureComponent {
             <div className='account-card__title__avatar'><Avatar account={account} size={56} /></div>
             <DisplayName account={account} />
           </div>
-        </Link>
+        </Permalink>
 
         {account.get('note').length > 0 && (
           <div

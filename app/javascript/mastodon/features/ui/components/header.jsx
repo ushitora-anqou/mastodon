@@ -5,6 +5,7 @@ import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 
 import { Link, withRouter } from 'react-router-dom';
 
+
 import { connect } from 'react-redux';
 
 import { openModal } from 'mastodon/actions/modal';
@@ -12,14 +13,15 @@ import { fetchServer } from 'mastodon/actions/server';
 import { Avatar } from 'mastodon/components/avatar';
 import { Icon } from 'mastodon/components/icon';
 import { WordmarkLogo, SymbolLogo } from 'mastodon/components/logo';
+import Permalink from 'mastodon/components/permalink';
 import { registrationsOpen, me, sso_redirect } from 'mastodon/initial_state';
 
 const Account = connect(state => ({
   account: state.getIn(['accounts', me]),
 }))(({ account }) => (
-  <Link to={`/@${account.get('acct')}`} title={account.get('acct')}>
+  <Permalink href={account.get('url')} to={`/@${account.get('acct')}`} title={account.get('acct')}>
     <Avatar account={account} size={35} />
-  </Link>
+  </Permalink>
 ));
 
 const messages = defineMessages({

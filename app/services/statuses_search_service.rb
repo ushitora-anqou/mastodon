@@ -40,7 +40,7 @@ class StatusesSearchService < BaseService
   end
 
   def parsed_query
-    SearchQueryTransformer.new.apply(SearchQueryParser.new.parse(@query), current_account: @account)
+    SearchQueryTransformer.new.apply(SearchQueryParser.new.parse(@query.gsub(/(　)/," ")), current_account: @account)
   end
 
   def convert_deprecated_options!

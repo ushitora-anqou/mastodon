@@ -1,0 +1,12 @@
+{
+  "welcome": {
+    "body": "わくわく鮟鱇ランドへようこそ！ ゆっくりしていってね。",
+    "icon": "https://mstdn.anqou.net/ankou.png",
+    "href": "https://ushitora-anqou.github.io/upptime-mstdn.anqou.net/"
+  },
+  "guide": {
+    "body": "mstdn.anqou.net ガイドはこちらをクリック",
+    "icon": "https://mstdn.anqou.net/guide.png",
+    "href": "https://hackmd.io/@anqou/ry3lqyvF2"
+  }
+}

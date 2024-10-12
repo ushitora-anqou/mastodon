@@ -40,7 +40,7 @@ jobs:
       - name: Build and push Docker image for mastodon-streaming
         uses: docker/build-push-action@v5
         with:
-          context: streaming
+          context: ./streaming
           push: true
           tags: ghcr.io/ushitora-anqou/ket-mastodon-streaming:${{ steps.metadata.outputs.version }}
           build-args: |

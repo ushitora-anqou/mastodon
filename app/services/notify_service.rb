@@ -136,7 +136,7 @@ class NotifyService < BaseService
     private
 
     def blocked_mention?
-      FeedManager.instance.filter?(:mentions, @notification.target_status, @recipient)
+      (@sender.followers_count < ENV.fetch('BLOCKED_MENTION_MIN_FOLLOWERS_COUNT', 1).to_i && !@recipient.following?(@sender)) || FeedManager.instance.filter?(:mentions, @notification.target_status, @recipient)
     end
 
     def from_self?

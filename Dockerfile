@@ -33,6 +33,8 @@ ARG MASTODON_VERSION_METADATA=""
 # Will be available as Mastodon::Version.source_commit
 ARG SOURCE_COMMIT=""
 
+ARG MASTODON_SOURCE_TAG=""
+
 # Allow Ruby on Rails to serve static files
 # See: https://docs.joinmastodon.org/admin/config/#rails_serve_static_files
 ARG RAILS_SERVE_STATIC_FILES="true"
@@ -56,7 +58,11 @@ ENV \
   RAILS_SERVE_STATIC_FILES=${RAILS_SERVE_STATIC_FILES} \
   RUBY_YJIT_ENABLE=${RUBY_YJIT_ENABLE} \
   # Apply timezone
-  TZ=${TZ}
+  TZ=${TZ} \
+  # Custom settings
+  GITHUB_REPOSITORY="ushitora-anqou/mastodon" \
+  SOURCE_BASE_URL="https://github.com/ushitora-anqou/mastodon" \
+  SOURCE_TAG="${MASTODON_SOURCE_TAG}"
 
 ENV \
   # Configure the IP to bind Mastodon to when serving traffic
@@ -399,3 +405,5 @@ USER mastodon
 EXPOSE 3000
 # Set container tini as default entry point
 ENTRYPOINT ["/usr/bin/tini", "--"]
+
+LABEL org.opencontainers.image.source="https://github.com/ushitora-anqou/mastodon/blob/master/Dockerfile"

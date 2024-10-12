@@ -1,0 +1,51 @@
+name: (ket) Publish Docker image to ghcr.io
+
+on:
+  push:
+    tags: # NOTE: This field does NOT support regex. cf. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
+      - '[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: metadata
+        run: echo "version=$(echo ${{ github.ref }} | sed -e "s#refs/tags/##g")" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Docker image for mastodon
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/ushitora-anqou/ket-mastodon:${{ steps.metadata.outputs.version }}
+          build-args: |
+            MASTODON_SOURCE_TAG=${{ steps.metadata.outputs.version }}
+
+      - name: Build and push Docker image for mastodon-streaming
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: streaming/Dockerfile
+          push: true
+          tags: ghcr.io/ushitora-anqou/ket-mastodon-streaming:${{ steps.metadata.outputs.version }}
+          build-args: |
+            MASTODON_SOURCE_TAG=${{ steps.metadata.outputs.version }}

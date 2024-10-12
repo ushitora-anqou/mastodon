@@ -414,3 +414,5 @@ USER mastodon
 EXPOSE 3000
 # Set container tini as default entry point
 ENTRYPOINT ["/usr/bin/tini", "--"]
+
+LABEL org.opencontainers.image.source="https://github.com/ushitora-anqou/mastodon/blob/master/Dockerfile"

@@ -189,6 +189,28 @@ class Status extends ImmutablePureComponent {
     this.handleClick(e);
   };
 
+  handleHeaderAuxClick = e => {
+    // Only handle clicks on the empty space above the content
+    if (e.target !== e.currentTarget && e.detail >= 1) {
+      return;
+    }
+
+    // Handle middle-click for opening original page of remote posts
+    if (e.button === 1) {
+      e.preventDefault();
+      const status = this._properStatus();
+      const isRemote = status.getIn(['account', 'username']) !== status.getIn(['account', 'acct']);
+
+      if (isRemote && status.get('url')) {
+        window.open(status.get('url'), '_blank', 'noopener');
+      } else {
+        // For local posts, open in new tab using current path
+        const path = `/@${status.getIn(['account', 'acct'])}/${status.get('id')}`;
+        window.open(path, '_blank', 'noopener');
+      }
+    }
+  };
+
   handleExpandedToggle = () => {
     this.props.onToggleHidden(this._properStatus());
   };
@@ -575,7 +597,7 @@ class Status extends ImmutablePureComponent {
           >
             {(connectReply || connectUp || connectToRoot) && <div className={classNames('status__line', { 'status__line--full': connectReply, 'status__line--first': !status.get('in_reply_to_id') && !connectToRoot })} />}
 
-            <div onClick={this.handleHeaderClick} onAuxClick={this.handleHeaderClick} className='status__info'>
+            <div onClick={this.handleHeaderClick} onAuxClick={this.handleHeaderAuxClick} className='status__info'>
               <Link to={`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`} className='status__relative-time'>
                 <span className='status__visibility-icon'><VisibilityIcon visibility={status.get('visibility')} /></span>
                 <RelativeTimestamp timestamp={status.get('created_at')} />{status.get('edited_at') && <abbr title={intl.formatMessage(messages.edited, { date: intl.formatDate(status.get('edited_at'), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }) })}> *</abbr>}

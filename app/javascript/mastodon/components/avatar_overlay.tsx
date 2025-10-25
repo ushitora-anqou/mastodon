@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useHovering } from 'mastodon/hooks/useHovering';
 import { autoPlayGif } from 'mastodon/initial_state';
 import type { Account } from 'mastodon/models/account';
@@ -26,12 +27,28 @@ export const AvatarOverlay: React.FC<Props> = ({
     ? friend?.get('avatar')
     : friend?.get('avatar_static');
 
+  const handleAuxClick = useCallback((e: React.MouseEvent) => {
+    if (e.button === 1 && account) {
+      e.preventDefault();
+      e.stopPropagation();
+      const isRemote = account.get('acct') !== account.get('username');
+      if (isRemote && account.get('url')) {
+        // For remote users, open the original page
+        window.open(account.get('url'), '_blank', 'noopener');
+      } else {
+        // For local users, open the local account page
+        window.open(`/@${account.get('acct')}`, '_blank', 'noopener');
+      }
+    }
+  }, [account]);
+
   return (
     <div
       className='account__avatar-overlay'
       style={{ width: size, height: size }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onAuxClick={handleAuxClick}
     >
       <div className='account__avatar-overlay-base'>
         <div

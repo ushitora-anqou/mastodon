@@ -36,12 +36,28 @@ export const LinkedDisplayName: FC<
     return <DisplayName {...displayProps} />;
   }
 
+  const handleAuxClick = (e: React.MouseEvent) => {
+    if (e.button === 1) {
+      e.preventDefault();
+      e.stopPropagation();
+      const isRemote = account.acct !== account.username;
+      if (isRemote && account.url) {
+        // For remote users, open the original page
+        window.open(account.url, '_blank', 'noopener');
+      } else {
+        // For local users, open the local account page
+        window.open(`/@${account.acct}`, '_blank', 'noopener');
+      }
+    }
+  };
+
   return (
     <Link
       to={`/@${account.acct}`}
       title={`@${account.acct}`}
       data-id={account.id}
       data-hover-card-account={account.id}
+      onAuxClick={handleAuxClick}
       {...linkProps}
     >
       {children}

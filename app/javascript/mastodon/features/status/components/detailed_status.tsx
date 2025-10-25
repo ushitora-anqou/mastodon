@@ -428,8 +428,20 @@ export const DetailedStatus: React.FC<{
             <a
               className='detailed-status__datetime'
               href={`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`}
-              target='_blank'
-              rel='noopener noreferrer'
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                // Left click: always open local page in new tab
+                e.preventDefault();
+                window.open(`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`, '_blank', 'noopener,noreferrer');
+              }}
+              onAuxClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                // Middle click: always open remote page in new tab
+                e.preventDefault();
+                const isLocal = status.getIn(['account', 'acct'], '').indexOf('@') === -1;
+                const remoteUrl = isLocal
+                  ? `/@${status.getIn(['account', 'acct'])}/${status.get('id')}`
+                  : status.get('uri');
+                window.open(remoteUrl, '_blank', 'noopener,noreferrer');
+              }}
             >
               <FormattedDateWrapper
                 value={new Date(status.get('created_at') as string)}

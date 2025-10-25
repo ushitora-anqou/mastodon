@@ -75,7 +75,24 @@ export const HoverCardAccount = forwardRef<
     >
       {account ? (
         <>
-          <Link to={`/@${account.acct}`} className='hover-card__name'>
+          <Link
+            to={`/@${account.acct}`}
+            className='hover-card__name'
+            onAuxClick={(e) => {
+              if (e.button === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isRemote = account.acct !== account.username;
+                if (isRemote && account.url) {
+                  // For remote users, open the original page
+                  window.open(account.url, '_blank', 'noopener');
+                } else {
+                  // For local users, open the local account page
+                  window.open(`/@${account.acct}`, '_blank', 'noopener');
+                }
+              }
+            }}
+          >
             <Avatar
               account={isSuspendedOrHidden ? undefined : account}
               size={46}

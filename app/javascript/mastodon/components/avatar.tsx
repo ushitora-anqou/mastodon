@@ -9,7 +9,7 @@ import type { Account } from 'mastodon/models/account';
 
 interface Props {
   account:
-    | Pick<Account, 'id' | 'acct' | 'avatar' | 'avatar_static'>
+    | Pick<Account, 'id' | 'acct' | 'avatar' | 'avatar_static' | 'username' | 'url'>
     | undefined; // FIXME: remove `undefined` once we know for sure its always there
   size?: number;
   style?: React.CSSProperties;
@@ -52,6 +52,21 @@ export const Avatar: React.FC<Props> = ({
     setError(true);
   }, [setError]);
 
+  const handleAuxClick = useCallback((e: React.MouseEvent) => {
+    if (e.button === 1 && account) {
+      e.preventDefault();
+      e.stopPropagation();
+      const isRemote = account.acct !== account.username;
+      if (isRemote && account.url) {
+        // For remote users, open the original page
+        window.open(account.url, '_blank', 'noopener');
+      } else {
+        // For local users, open the local account page
+        window.open(`/@${account.acct}`, '_blank', 'noopener');
+      }
+    }
+  }, [account]);
+
   const avatar = (
     <div
       className={classNames(className, 'account__avatar', {
@@ -60,6 +75,7 @@ export const Avatar: React.FC<Props> = ({
       })}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onAuxClick={handleAuxClick}
       style={style}
     >
       {src && !error && (
@@ -83,6 +99,7 @@ export const Avatar: React.FC<Props> = ({
         to={`/@${account?.acct}`}
         title={`@${account?.acct}`}
         data-hover-card-account={account?.id}
+        onAuxClick={handleAuxClick}
       >
         {avatar}
       </Link>

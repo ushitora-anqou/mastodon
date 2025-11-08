@@ -38,6 +38,7 @@ class UserSettings
     setting :auto_play, default: false
     setting :emoji_style, default: 'auto', in: %w(auto native twemoji)
     setting :mod_webui_styles, default: 'default', in: %w(default compact legacy)
+    setting :crop_attachment_thumbnails_on_timeline, default: false
   end
 
   namespace :notification_emails do

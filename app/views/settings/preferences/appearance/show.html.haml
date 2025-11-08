@@ -49,6 +49,9 @@
     .fields-group
       = ff.input :'web.mod_webui_styles', label: I18n.t('simple_form.labels.defaults.setting_webui_styles'), collection: ['default', 'compact', 'legacy'], label_method: lambda { |item| I18n.t("simple_form.hints.defaults.setting_webui_styles_#{item}") }, wrapper: :with_label, include_blank: false, hint: I18n.t('simple_form.hints.defaults.setting_webui_styles_hint')
 
+    .fields-group
+      = ff.input :'web.crop_attachment_thumbnails_on_timeline', wrapper: :with_label, recommended: true, label: I18n.t('simple_form.labels.defaults.crop_attachment_thumbnails_on_timeline'), hint: I18n.t('simple_form.hints.defaults.crop_attachment_thumbnails_on_timeline')
+
     %h4= t 'appearance.animations_and_accessibility'
 
     .fields-group

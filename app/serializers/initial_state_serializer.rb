@@ -33,6 +33,7 @@ class InitialStateSerializer < ActiveModel::Serializer
       store[:show_trends]       = Setting.trends && object_account_user.setting_trends
       store[:emoji_style]       = object_account_user.settings['web.emoji_style']
       store[:webui_styles]      = object.current_account.user.setting_webui_styles
+      store[:crop_attachment_thumbnails_on_timeline] = object.current_account.user.setting_crop_attachment_thumbnails_on_timeline
     else
       store[:auto_play_gif] = Setting.auto_play_gif
       store[:display_media] = Setting.display_media

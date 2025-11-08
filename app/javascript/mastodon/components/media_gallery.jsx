@@ -15,7 +15,7 @@ import { Blurhash } from 'mastodon/components/blurhash';
 import { SpoilerButton } from 'mastodon/components/spoiler_button';
 import { formatTime } from 'mastodon/features/video';
 
-import { autoPlayGif, displayMedia, useBlurhash } from '../initial_state';
+import { autoPlayGif, cropAttachmentThumbnailsOnTimeline, displayMedia, useBlurhash } from '../initial_state';
 
 class Item extends PureComponent {
 
@@ -227,6 +227,7 @@ class MediaGallery extends PureComponent {
     autoplay: PropTypes.bool,
     onToggleVisibility: PropTypes.func,
     matchedFilters: PropTypes.arrayOf(PropTypes.string),
+    standalone: PropTypes.bool,
   };
 
   state = {
@@ -292,8 +293,17 @@ class MediaGallery extends PureComponent {
   }
 
   isFullSizeEligible() {
-    const { media } = this.props;
+    const { media, standalone } = this.props;
+    if (cropAttachmentThumbnailsOnTimeline) {
+      return media.size === 1 && media.getIn([0, 'meta', 'small', 'aspect']) && standalone;
+    }
+
     return media.size === 1 && media.getIn([0, 'meta', 'small', 'aspect']);
+  }
+
+  isCropThumbnail() {
+    const { media, standalone } = this.props;
+    return media.size === 1 && cropAttachmentThumbnailsOnTimeline && standalone !== true;
   }
 
   render () {
@@ -307,6 +317,8 @@ class MediaGallery extends PureComponent {
 
     if (this.isFullSizeEligible()) {
       style.aspectRatio = `${this.props.media.getIn([0, 'meta', 'small', 'aspect'])}`;
+    } else if (this.isCropThumbnail()) {
+      style.aspectRatio = '16 / 9';
     } else {
       style.aspectRatio = '3 / 2';
     }

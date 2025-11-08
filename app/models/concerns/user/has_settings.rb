@@ -150,4 +150,8 @@ module User::HasSettings
   def setting_webui_styles
     settings['web.mod_webui_styles']
   end
+
+  def setting_crop_attachment_thumbnails_on_timeline
+    settings['web.crop_attachment_thumbnails_on_timeline']
+  end
 end

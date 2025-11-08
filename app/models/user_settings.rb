@@ -41,6 +41,7 @@ class UserSettings
     setting :color_scheme, default: 'auto', in: %w(auto light dark)
     setting :contrast, default: 'auto', in: %w(auto high)
     setting :mod_webui_styles, default: 'default', in: %w(default compact legacy)
+    setting :crop_attachment_thumbnails_on_timeline, default: false
   end
 
   namespace :notification_emails do

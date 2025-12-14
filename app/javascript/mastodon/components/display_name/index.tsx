@@ -37,7 +37,7 @@ export const LinkedDisplayName: FC<
   }
 
   const handleAuxClick = (e: React.MouseEvent) => {
-    if (e.button === 1) {
+    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
       e.preventDefault();
       e.stopPropagation();
       const isRemote = account.acct !== account.username;

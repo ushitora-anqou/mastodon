@@ -195,8 +195,8 @@ class Status extends ImmutablePureComponent {
       return;
     }
 
-    // Handle middle-click for opening original page of remote posts
-    if (e.button === 1) {
+    // Handle middle-click or Ctrl+click for opening original page of remote posts
+    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
       e.preventDefault();
       const status = this._properStatus();
       const isRemote = status.getIn(['account', 'username']) !== status.getIn(['account', 'acct']);
@@ -212,8 +212,8 @@ class Status extends ImmutablePureComponent {
   };
 
   handleTimestampAuxClick = e => {
-    // Handle middle-click for timestamp link
-    if (e.button === 1) {
+    // Handle middle-click or Ctrl+click for timestamp link
+    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
       e.preventDefault();
       const status = this._properStatus();
       const isRemote = status.getIn(['account', 'username']) !== status.getIn(['account', 'acct']);

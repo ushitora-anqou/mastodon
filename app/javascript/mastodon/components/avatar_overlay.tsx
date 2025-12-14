@@ -28,7 +28,7 @@ export const AvatarOverlay: React.FC<Props> = ({
     : friend?.get('avatar_static');
 
   const handleAuxClick = useCallback((e: React.MouseEvent) => {
-    if (e.button === 1 && account) {
+    if ((e.button === 1 || (e.button === 0 && e.ctrlKey)) && account) {
       e.preventDefault();
       e.stopPropagation();
       const isRemote = account.get('acct') !== account.get('username');

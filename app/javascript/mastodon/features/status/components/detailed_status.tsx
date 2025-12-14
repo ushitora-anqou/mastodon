@@ -462,13 +462,15 @@ export const DetailedStatus: React.FC<{
                 window.open(`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`, '_blank', 'noopener,noreferrer');
               }}
               onAuxClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                // Middle click: always open remote page in new tab
-                e.preventDefault();
-                const isLocal = status.getIn(['account', 'acct'], '').indexOf('@') === -1;
-                const remoteUrl = isLocal
-                  ? `/@${status.getIn(['account', 'acct'])}/${status.get('id')}`
-                  : status.get('uri');
-                window.open(remoteUrl, '_blank', 'noopener,noreferrer');
+                // Middle click or Ctrl+click: always open remote page in new tab
+                if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+                  e.preventDefault();
+                  const isLocal = status.getIn(['account', 'acct'], '').indexOf('@') === -1;
+                  const remoteUrl = isLocal
+                    ? `/@${status.getIn(['account', 'acct'])}/${status.get('id')}`
+                    : status.get('uri');
+                  window.open(remoteUrl, '_blank', 'noopener,noreferrer');
+                }
               }}
             >
               <FormattedDateWrapper

@@ -79,7 +79,7 @@ export const HoverCardAccount = forwardRef<
             to={`/@${account.acct}`}
             className='hover-card__name'
             onAuxClick={(e) => {
-              if (e.button === 1) {
+              if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
                 e.preventDefault();
                 e.stopPropagation();
                 const isRemote = account.acct !== account.username;

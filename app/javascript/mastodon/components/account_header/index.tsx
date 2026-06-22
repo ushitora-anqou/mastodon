@@ -1,10 +1,8 @@
-import { useCallback } from 'react';
-
 import classNames from 'classnames';
+import { Link } from 'react-router-dom';
 
 import { Helmet } from '@unhead/react/helmet';
 
-import { openModal } from '@/mastodon/actions/modal';
 import { useLayout } from '@/mastodon/hooks/useLayout';
 import { useVisibility } from '@/mastodon/hooks/useVisibility';
 import {
@@ -14,7 +12,7 @@ import {
 } from '@/mastodon/initial_state';
 import type { Account } from '@/mastodon/models/account';
 import { getAccountHidden } from '@/mastodon/selectors/accounts';
-import { useAppSelector, useAppDispatch } from '@/mastodon/store';
+import { useAppSelector } from '@/mastodon/store';
 
 import { AccountBio } from '../account_bio';
 import { Avatar } from '../avatar';
@@ -47,34 +45,8 @@ export const AccountHeader: React.FC<{
   accountId: string;
   hideTabs?: boolean;
 }> = ({ accountId, hideTabs }) => {
-  const dispatch = useAppDispatch();
   const account = useAppSelector((state) => state.accounts.get(accountId));
   const hidden = useAppSelector((state) => getAccountHidden(state, accountId));
-
-  const handleOpenAvatar = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.button !== 0 || e.ctrlKey || e.metaKey) {
-        return;
-      }
-
-      e.preventDefault();
-
-      if (!account) {
-        return;
-      }
-
-      dispatch(
-        openModal({
-          modalType: 'IMAGE',
-          modalProps: {
-            src: account.avatar,
-            alt: account.avatar_description,
-          },
-        }),
-      );
-    },
-    [dispatch, account],
-  );
 
   const { layout } = useLayout();
   const { observedRef, isIntersecting } = useVisibility({
@@ -110,19 +82,25 @@ export const AccountHeader: React.FC<{
 
         <div className={classes.barWrapper}>
           <div className={classes.avatarWrapper}>
-            <a
-              href={account.avatar}
-              rel='noopener'
-              target='_blank'
-              onClick={handleOpenAvatar}
-            >
-              <Avatar
-                className={classes.avatar}
-                account={suspendedOrHidden ? undefined : account}
-                alt={account.avatar_description}
-                size={80}
-              />
-            </a>
+            {isLocal ? (
+              <Link to={`/@${account.acct}`}>
+                <Avatar
+                  className={classes.avatar}
+                  account={suspendedOrHidden ? undefined : account}
+                  alt={account.avatar_description}
+                  size={80}
+                />
+              </Link>
+            ) : (
+              <a href={account.url} rel='noopener'>
+                <Avatar
+                  className={classes.avatar}
+                  account={suspendedOrHidden ? undefined : account}
+                  alt={account.avatar_description}
+                  size={80}
+                />
+              </a>
+            )}
           </div>
 
           <div className={classes.displayNameWrapper}>

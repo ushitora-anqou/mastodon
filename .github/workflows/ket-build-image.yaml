@@ -7,13 +7,35 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
 
 jobs:
-  build-and-push-image:
-    runs-on: ubuntu-latest
-
+  # ── Per-platform build (push-by-digest, no tag yet) ───────────────
+  # 2 images x 2 platforms = 4 jobs. Each job pushes a single-arch
+  # image indexed by digest only. The merge job below creates the
+  # final tagged multi-arch manifest atomically, so a partial
+  # (single-arch) tag can never exist mid-build.
+  build:
+    name: build - ${{ matrix.image }} - ${{ matrix.platform }}
+    runs-on: ${{ contains(matrix.platform, 'arm64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
-
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [mastodon, mastodon-streaming]
+        platform: [linux/amd64, linux/arm64]
+        # IMPORTANT: do NOT add `platform` as a key in include entries.
+        # If an include entry's platform value is not in matrix.platform,
+        # GitHub Actions treats it as a NEW combination and spawns an
+        # unwanted extra job. Only map image -> (dockerfile, repo) here;
+        # the include entry matches ALL platform combinations for that
+        # image and attaches the extra keys additively.
+        include:
+          - image: mastodon
+            dockerfile: ./Dockerfile
+            repo: ghcr.io/ushitora-anqou/ket-mastodon
+          - image: mastodon-streaming
+            dockerfile: ./streaming/Dockerfile
+            repo: ghcr.io/ushitora-anqou/ket-mastodon-streaming
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,25 +49,141 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Extract metadata
         id: metadata
         run: echo "version=$(echo ${{ github.ref }} | sed -e "s#refs/tags/##g")" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push Docker image for mastodon
-        uses: docker/build-push-action@v5
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v7
         with:
           context: .
-          push: true
-          tags: ghcr.io/ushitora-anqou/ket-mastodon:${{ steps.metadata.outputs.version }}
+          file: ${{ matrix.dockerfile }}
+          platforms: ${{ matrix.platform }}
+          provenance: false
           build-args: |
             MASTODON_SOURCE_TAG=${{ steps.metadata.outputs.version }}
+          # push-by-digest: no tag here. The merge job creates the tag
+          # atomically via `imagetools create`, so a partial (single-arch)
+          # tag can never exist mid-build.
+          # `push=true` is MANDATORY with push-by-digest; without it
+          # buildx exports locally and never pushes.
+          outputs: type=image,name=${{ matrix.repo }},push-by-digest=true,name-canonical=true,push=true
 
-      - name: Build and push Docker image for mastodon-streaming
-        uses: docker/build-push-action@v5
+      - name: Prepare digest artifact
+        id: prep
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          PLATFORM: ${{ matrix.platform }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+            echo "::error::No digest produced for ${{ matrix.image }} (${{ matrix.platform }})"
+            exit 1
+          fi
+          # upload-artifact forbids '/' in artifact names: linux/amd64 -> linux-amd64
+          safe="${PLATFORM//\//-}"
+          mkdir -p /tmp/digest
+          printf '%s\n' "$DIGEST" > "/tmp/digest/digest-${safe}.txt"
+          echo "artifact_name=digest-${{ matrix.image }}-${safe}" >> "$GITHUB_OUTPUT"
+          echo "Pushed ${{ matrix.image }} (${{ matrix.platform }}): $DIGEST" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
         with:
-          context: .
-          file: streaming/Dockerfile
-          push: true
-          tags: ghcr.io/ushitora-anqou/ket-mastodon-streaming:${{ steps.metadata.outputs.version }}
-          build-args: |
-            MASTODON_SOURCE_TAG=${{ steps.metadata.outputs.version }}
+          name: ${{ steps.prep.outputs.artifact_name }}
+          path: /tmp/digest
+          retention-days: 1
+          if-no-files-found: error
+
+  # ── Merge: create the final multi-arch tag atomically ─────────────
+  # One merge job per image. Downloads only its own image's digest
+  # artifacts (filtered by `pattern`) and invokes
+  # `docker buildx imagetools create` to assemble the manifest list.
+  merge:
+    name: merge - ${{ matrix.image }}
+    needs: [build]
+    # Run even if a sibling image's build failed, so that a streaming
+    # arm64 failure does not block the mastodon publish. The find-digests
+    # step below guards each image independently.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [mastodon, mastodon-streaming]
+        include:
+          - image: mastodon
+            repo: ghcr.io/ushitora-anqou/ket-mastodon
+          - image: mastodon-streaming
+            repo: ghcr.io/ushitora-anqou/ket-mastodon-streaming
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx (pinned)
+        uses: docker/setup-buildx-action@v4
+        with:
+          # docker/buildx#3708: `imagetools create` is broken on GHCR
+          # since buildx v0.31.1. Pin the buildx CLI to v0.31.0 in this
+          # merge job only (the build job above is unaffected).
+          version: v0.31.0
+
+      - name: Extract metadata
+        id: metadata
+        run: echo "version=$(echo ${{ github.ref }} | sed -e "s#refs/tags/##g")" >> "$GITHUB_OUTPUT"
+
+      - name: Download per-platform digests
+        uses: actions/download-artifact@v4
+        with:
+          # `digest-mastodon-*` would also match `digest-mastodon-streaming-*`
+          # ("mastodon" is a prefix of "mastodon-streaming"), leaking the
+          # streaming digests into the mastodon merge job. Pin the pattern to
+          # `-linux-` (the platform component of the artifact name) so each
+          # merge job downloads only its own image's digests.
+          pattern: digest-${{ matrix.image }}-linux-*
+          path: digests
+          merge-multiple: true
+
+      - name: Merge multi-arch manifest
+        env:
+          REPO: ${{ matrix.repo }}
+          TAG: ${{ matrix.repo }}:${{ steps.metadata.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find digests -type f -print | sort)
+          if [ "${#files[@]}" -lt 1 ]; then
+            echo "::error::No digest files found for ${{ matrix.image }}"
+            exit 1
+          fi
+          args=()
+          for f in "${files[@]}"; do
+            d="$(tr -d '[:space:]' < "$f")"
+            case "$d" in
+              sha256:*) : ;;
+              *) echo "::error::Bad digest in $f: $d"; exit 1 ;;
+            esac
+            args+=("${REPO}@${d}")
+          done
+          echo "Merging ${#files[@]} arch(s) -> ${TAG}" | tee -a "$GITHUB_STEP_SUMMARY"
+          docker buildx imagetools create -t "${TAG}" "${args[@]}"
+
+      - name: Verify merged manifest
+        env:
+          TAG: ${{ matrix.repo }}:${{ steps.metadata.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect "${TAG}" | tee -a "$GITHUB_STEP_SUMMARY"

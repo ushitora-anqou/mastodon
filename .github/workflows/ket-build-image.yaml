@@ -147,7 +147,12 @@ jobs:
       - name: Download per-platform digests
         uses: actions/download-artifact@v4
         with:
-          pattern: digest-${{ matrix.image }}-*
+          # `digest-mastodon-*` would also match `digest-mastodon-streaming-*`
+          # ("mastodon" is a prefix of "mastodon-streaming"), leaking the
+          # streaming digests into the mastodon merge job. Pin the pattern to
+          # `-linux-` (the platform component of the artifact name) so each
+          # merge job downloads only its own image's digests.
+          pattern: digest-${{ matrix.image }}-linux-*
           path: digests
           merge-multiple: true
 

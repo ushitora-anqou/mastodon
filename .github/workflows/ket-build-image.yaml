@@ -108,8 +108,10 @@ jobs:
     name: merge - ${{ matrix.image }}
     needs: [build]
     # Run even if a sibling image's build failed, so that a streaming
-    # arm64 failure does not block the mastodon publish. The find-digests
-    # step below guards each image independently.
+    # arm64 failure does not block the mastodon publish. The merge step
+    # below fails each image independently when its own digest set is
+    # incomplete (a missing platform), so a partial (single-arch) tag
+    # can never be created.
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
@@ -164,8 +166,13 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t files < <(find digests -type f -print | sort)
-          if [ "${#files[@]}" -lt 1 ]; then
-            echo "::error::No digest files found for ${{ matrix.image }}"
+          # Must match the number of platforms in the build matrix above
+          # (linux/amd64 + linux/arm64). Refuse to tag a partial manifest:
+          # "Re-run failed jobs" does not re-run a previously-successful
+          # merge job, so a single-arch tag would silently stick.
+          expected=2
+          if [ "${#files[@]}" -ne "$expected" ]; then
+            echo "::error::Expected ${expected} platform digests for ${{ matrix.image }}, got ${#files[@]}. Refusing to create a partial multi-arch tag."
             exit 1
           fi
           args=()

@@ -49,6 +49,17 @@ export const StatusHeader: FC<StatusHeaderProps> = ({
   }
   const statusAccount = status.account;
   const editedAt = status.edited_at;
+  const isLocal = !statusAccount.acct.includes('@');
+
+  const timestamp = (
+    <>
+      <span className='status__visibility-icon'>
+        <VisibilityIcon visibility={status.visibility} />
+      </span>
+      <RelativeTimestamp timestamp={status.created_at} />
+      {editedAt && <StatusEditedAt editedAt={editedAt} />}
+    </>
+  );
 
   return (
     /* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
@@ -67,16 +78,18 @@ export const StatusHeader: FC<StatusHeaderProps> = ({
 
       {contentBeforeDate}
 
-      <Link
-        to={`/@${statusAccount.acct}/${status.id}`}
-        className='status__relative-time'
-      >
-        <span className='status__visibility-icon'>
-          <VisibilityIcon visibility={status.visibility} />
-        </span>
-        <RelativeTimestamp timestamp={status.created_at} />
-        {editedAt && <StatusEditedAt editedAt={editedAt} />}
-      </Link>
+      {isLocal || !status.url ? (
+        <Link
+          to={`/@${statusAccount.acct}/${status.id}`}
+          className='status__relative-time'
+        >
+          {timestamp}
+        </Link>
+      ) : (
+        <a href={status.url} rel='noopener' className='status__relative-time'>
+          {timestamp}
+        </a>
+      )}
 
       {contentAfterDate}
     </div>

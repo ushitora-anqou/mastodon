@@ -321,6 +321,38 @@ export const DetailedStatus: React.FC<{
     </>
   );
 
+  const remoteUrl =
+    typeof status.getIn(['account', 'acct']) === 'string' &&
+    (status.getIn(['account', 'acct']) as string).includes('@')
+      ? (status.get('url') as string | null)
+      : null;
+
+  const datetime = (
+    <FormattedDateWrapper
+      value={new Date(status.get('created_at') as string)}
+      year='numeric'
+      month='short'
+      day='2-digit'
+      hour='2-digit'
+      minute='2-digit'
+    />
+  );
+
+  const datetimeLink = remoteUrl ? (
+    <a className='detailed-status__datetime' href={remoteUrl} rel='noopener'>
+      {datetime}
+    </a>
+  ) : (
+    <a
+      className='detailed-status__datetime'
+      href={`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`}
+      target='_blank'
+      rel='noopener noreferrer'
+    >
+      {datetime}
+    </a>
+  );
+
   if (['private', 'direct'].includes(status.get('visibility') as string)) {
     reblogLink = '';
   } else {
@@ -500,21 +532,7 @@ export const DetailedStatus: React.FC<{
 
         <div className='detailed-status__meta'>
           <div className='detailed-status__meta__line'>
-            <a
-              className='detailed-status__datetime'
-              href={`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              <FormattedDateWrapper
-                value={new Date(status.get('created_at') as string)}
-                year='numeric'
-                month='short'
-                day='2-digit'
-                hour='2-digit'
-                minute='2-digit'
-              />
-            </a>
+            {datetimeLink}
 
             {visibilityLink}
             {applicationLink}

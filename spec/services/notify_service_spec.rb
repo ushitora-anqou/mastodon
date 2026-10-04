@@ -5,6 +5,12 @@ require 'rails_helper'
 RSpec.describe NotifyService do
   subject { described_class.new.call(recipient, type, activity) }
 
+  around do |example|
+    ClimateControl.modify BLOCKED_FOLLOW_MIN_FOLLOWERS_COUNT: '0', BLOCKED_MENTION_MIN_FOLLOWERS_COUNT: '0' do
+      example.run
+    end
+  end
+
   let(:user) { Fabricate(:user) }
   let(:recipient) { user.account }
   let(:sender) { Fabricate(:account, domain: 'example.com') }
@@ -632,6 +638,45 @@ RSpec.describe NotifyService do
             expect(described_class.new(notification).filter?).to be false
           end
         end
+      end
+    end
+  end
+
+  describe 'with few-follower follow restriction' do
+    around do |example|
+      ClimateControl.modify BLOCKED_FOLLOW_MIN_FOLLOWERS_COUNT: '1' do
+        example.run
+      end
+    end
+
+    context 'when sender has fewer followers than the threshold' do
+      it 'does not notify on follow' do
+        expect { subject }.to_not change(Notification, :count)
+      end
+
+      it 'does not notify on follow request' do
+        follow_request = Fabricate(:follow_request, account: sender, target_account: recipient)
+        expect { described_class.new.call(recipient, :follow_request, follow_request) }.to_not change(Notification, :count)
+      end
+    end
+
+    context 'when sender has at least the threshold followers' do
+      before do
+        sender.update!(followers_count: 1)
+      end
+
+      it 'notifies on follow' do
+        expect { subject }.to change(Notification, :count).by(1)
+      end
+    end
+
+    context 'when recipient follows sender' do
+      before do
+        recipient.follow!(sender)
+      end
+
+      it 'notifies on follow' do
+        expect { subject }.to change(Notification, :count).by(1)
       end
     end
   end

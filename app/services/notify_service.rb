@@ -115,6 +115,7 @@ class NotifyService < BaseService
       blocked ||= @recipient.muting_notifications?(@sender)
       blocked ||= conversation_muted?
       blocked ||= blocked_mention? if message?
+      blocked ||= blocked_follow? if follow_notification?
 
       return true if blocked
       return false unless filterable_type?
@@ -132,6 +133,14 @@ class NotifyService < BaseService
 
     def blocked_mention?
       (@sender.followers_count < ENV.fetch('BLOCKED_MENTION_MIN_FOLLOWERS_COUNT', 1).to_i && !@recipient.following?(@sender)) || FeedManager.instance.filter?(:mentions, @notification.target_status, @recipient)
+    end
+
+    def blocked_follow?
+      @sender.followers_count < ENV.fetch('BLOCKED_FOLLOW_MIN_FOLLOWERS_COUNT', 1).to_i && !@recipient.following?(@sender)
+    end
+
+    def follow_notification?
+      %i(follow follow_request).include?(@notification.type)
     end
 
     def from_self?
